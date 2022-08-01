@@ -1,0 +1,11 @@
+---
+- name: deploying node js site
+  hosts: all
+  become: yes
+  tasks:
+    - name: cleaning server
+      include_tasks: destroyer.yml
+    - name: installing packages
+      include_tasks: installer.yml
+    - name: running site
+      include_tasks: deploy.yml

@@ -1,0 +1,47 @@
+- name: updating packges
+  apt: name=* state=latest update_cache=yes
+- name: installing git
+  apt:
+    name: git
+    state: present
+- name: install pip
+  apt:
+    name: pip
+    state: present
+- name: Install dependencies
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - gnupg-agent
+- name: Add an apt signing key for Docker
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+- name: Add apt repository for stable version
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+    state: present
+- name: Install Docker
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+      - docker-ce
+      - docker-ce-cli 
+      - containerd.io
+- name: Add user to docker group
+  user:
+    name: "{{ansible_user}}"
+    group: docker
+- name: installing docker module for python
+  pip: 
+    name: docker-py

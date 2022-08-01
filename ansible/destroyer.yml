@@ -1,0 +1,12 @@
+- name: stopping container
+  shell: docker stop $(docker ps -a -q)
+  ignore_errors: yes
+- name: deleting containers
+  shell: docker rm $(docker ps -a -q)
+  ignore_errors: yes
+- name: deleting images
+  shell: docker rmi $(docker images -a -q)
+  ignore_errors: yes
+- name: deleting repo
+  shell: rm -rf  /home/ubuntu/test-task
+  ignore_errors: yes

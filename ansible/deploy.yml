@@ -1,0 +1,15 @@
+- name: Clone a repo with separate git directory
+  ansible.builtin.git:
+    repo: https://github.com/MarshmallowSoup/test-task-softwarenetic-js
+    dest: /home/ubuntu/test-task
+  ignore_errors: yes
+- name: starting docker 
+  shell: service docker start
+- name: build Docker image
+  docker_image:
+    name: nodejsapp:v1
+    build:
+      path: /home/ubuntu/test-task  
+    state: present
+- name: running image
+  shell: docker run -p 80:5000 -d nodejsapp:v1
