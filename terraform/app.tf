@@ -2,13 +2,33 @@ provider "aws" {
     region = "us-east-1"
 }
 
+resource "aws_eip" "static_ip" {
+    instance = aws_instance.my_app.id  
+}
+
 resource "aws_instance" "my_app" {
     ami                    = "ami-052efd3df9dad4825"
     instance_type          = "t2.micro"
     vpc_security_group_ids = [aws_security_group.my_app_SG.id]
     key_name               = "my-key"
+ 
+    lifecycle {
+       create_before_destroy = true
+    }
     
 } 
+
+data "http" "my_public_ip" {
+  url = "https://ifconfig.co/json"
+  request_headers = {
+    Accept = "application/json"
+  }
+}
+
+locals {
+  ifconfig_co_json = jsondecode(data.http.my_public_ip.body)
+}
+
 
 resource "aws_security_group" "my_app_SG"{
     name         = "my_app_SG"     
@@ -28,7 +48,7 @@ resource "aws_security_group" "my_app_SG"{
         from_port = 22
         to_port   = 22
         protocol  = "tcp"
-        cidr_blocks = ["93.170.25.141/32"]
+        cidr_blocks = ["${local.ifconfig_co_json.ip}/32"]
     }
 
     egress {
@@ -43,7 +63,8 @@ resource "aws_security_group" "my_app_SG"{
 
  resource "local_file" "ansible_inventory" {
   content = templatefile("inventory.tpl",{
-  ip = aws_instance.my_app.public_ip
+  ip = aws_instance.my_app.public_ip, 
+  path = "/home/softwarenetic/.ssh/my-key.pem"
  })
   filename = "../ansible/inventory"
 }
