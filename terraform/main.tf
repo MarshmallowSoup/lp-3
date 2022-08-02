@@ -11,6 +11,9 @@ data "aws_ami" "latest_ubuntu"{
     }
 }
 
+resource "aws_eip" "my-app-ip" {
+  instance = aws_instance.my_app.id    
+}
 
 resource "aws_instance" "my_app" {
     ami                    =  data.aws_ami.latest_ubuntu.id
