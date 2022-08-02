@@ -7,13 +7,10 @@ data "aws_ami" "latest_ubuntu"{
     most_recent = true
     filter{
         name  = "name"
-        value = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+        values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
     }
 }
 
-resource "aws_eip" "static_ip" {
-    instance = aws_instance.my_app.id  
-}
 
 resource "aws_instance" "my_app" {
     ami                    =  data.aws_ami.latest_ubuntu.id
@@ -25,8 +22,9 @@ resource "aws_instance" "my_app" {
     lifecycle {
        create_before_destroy = true
     }
-    
-} 
+
+   
+}
 
 data "http" "my_public_ip" {
   url = "https://ifconfig.co/json"
@@ -71,10 +69,31 @@ resource "aws_security_group" "my_app_SG"{
     
 }
 
- resource "local_file" "ansible_inventory" {
+ /*resource "local_file" "ansible_inventory" {
   content = templatefile("inventory.tpl",{
   ip      = aws_instance.my_app.public_ip, 
-  path    = "/home/softwarenetic/.ssh/my-key.pem"
+  path    = var.key
  })
   filename = "../ansible/inventory"
+}*/
+
+resource "null_resource" "wait2connect" {
+ provisioner "remote-exec" {
+    connection {
+      host         = aws_instance.my_app.public_dns
+      user         = "ubuntu"
+      private_key  = file(var.key)
+    }
+
+    inline = ["echo 'connected!'"]
+  }
+
+   provisioner "local-exec" {
+      command = templatefile ("startScript.sh.tpl",{
+      ip = aws_instance.my_app.public_ip,
+      key = var.key
+      })
+    }
 }
+
+
