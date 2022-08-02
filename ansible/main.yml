@@ -1,6 +1,6 @@
 ---
 - name: deploying node js site
-  hosts: all
+  hosts: localhost
   become: yes
   tasks:
     - name: cleaning server

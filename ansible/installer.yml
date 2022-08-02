@@ -40,7 +40,7 @@
       - containerd.io
 - name: Add user to docker group
   user:
-    name: "{{ansible_user}}"
+    name: "ubuntu"
     group: docker
 - name: installing docker module for python
   pip: 

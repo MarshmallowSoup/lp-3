@@ -23,6 +23,29 @@ resource "aws_instance" "my_app" {
        create_before_destroy = true
     }
 
+    provisioner "file" {
+       connection {
+        host         = aws_instance.my_app.public_dns
+        user         = "ubuntu"
+        private_key  = file(var.key)
+    }
+      source = "../ansible"
+      destination = "/home/ubuntu"
+    }
+
+    provisioner "remote-exec" {
+      connection {
+        host         = aws_instance.my_app.public_dns
+        user         = "ubuntu"
+        private_key  = file(var.key)
+    }
+
+      inline = ["sudo apt update",
+      "sudo apt install -y ansible",
+      "ansible-playbook ansible/main.yml"
+      ]
+    }
+
    
 }
 
@@ -77,16 +100,8 @@ resource "aws_security_group" "my_app_SG"{
   filename = "../ansible/inventory"
 }*/
 
-resource "null_resource" "wait2connect" {
- provisioner "remote-exec" {
-    connection {
-      host         = aws_instance.my_app.public_dns
-      user         = "ubuntu"
-      private_key  = file(var.key)
-    }
-
-    inline = ["echo 'connected!'"]
-  }
+/*resource "null_resource" "wait2connect" {
+ 
 
    provisioner "local-exec" {
       command = templatefile ("startScript.sh.tpl",{
@@ -94,6 +109,6 @@ resource "null_resource" "wait2connect" {
       key = var.key
       })
     }
-}
+}*/
 
 
